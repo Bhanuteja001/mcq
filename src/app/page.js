@@ -3,11 +3,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useForm } from "react-hook-form";
+import { useToast } from "@/components/ToastProvider";
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const toast = useToast();
 
   const {
     register,
@@ -28,24 +30,24 @@ export default function Home() {
         if (res.data.message === "Login Successful") {
           localStorage.setItem("user", res.data.user.username);
           localStorage.setItem("userId", res.data.user.id);
-          alert("Login Successful");
+          toast.success("Login Successful");
           router.push("/dashboard");
           return;
         } else {
-          alert(res.data.message || "Invalid credentials");
+          toast.error(res.data.message || "Invalid credentials");
           return;
         }
       }
 
       if (!isLogin) {
-        alert("Registered Successfully");
+        toast.success("Registered Successfully");
         reset();
         setIsLogin(true);
       }
     } catch (error) {
       console.error(error);
       const msg = error?.response?.data?.message || "Something went wrong";
-      alert(msg);
+      toast.error(msg);
     }
   };
 
@@ -149,7 +151,7 @@ export default function Home() {
 
           {/* Submit Button */}
           <button
-            className="w-full bg-linear-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition duration-200 mt-6"
+            className="cursor-pointer w-full bg-linear-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition duration-200 mt-6"
             type="submit"
           >
             {isLogin ? "Login" : "Register"}
@@ -169,7 +171,7 @@ export default function Home() {
         {/* Toggle Button */}
         <button
           type="button"
-          className="w-full border-2 border-blue-500 text-blue-600 font-bold py-3 px-4 rounded-lg hover:bg-blue-50 transition duration-200"
+          className="cursor-pointer w-full border-2 border-blue-500 text-blue-600 font-bold py-3 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition duration-200"
           onClick={() => {
             setIsLogin(!isLogin);
             reset();

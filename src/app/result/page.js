@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function Result() {
   const [score, setScore] = useState(0);
@@ -9,6 +10,7 @@ export default function Result() {
   const [technology, setTechnology] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [numberOfQuestions, setNumberOfQuestions] = useState(0);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -29,8 +31,18 @@ export default function Result() {
     router.push("/dashboard");
   };
 
-  const handleHome = () => {
+  const handleLogoutRequest = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutModal(false);
+    localStorage.clear();
     router.push("/");
+  };
+
+  const handleCancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   return (
@@ -129,12 +141,20 @@ export default function Result() {
             Back to Dashboard
           </button>
           <button
-            onClick={handleHome}
+            type="button"
+            onClick={handleLogoutRequest}
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
           >
             Logout
           </button>
         </div>
+        <ConfirmModal
+          open={showLogoutModal}
+          title="Confirm Logout"
+          message="Are you sure you want to logout?"
+          onConfirm={handleConfirmLogout}
+          onCancel={handleCancelLogout}
+        />
       </div>
     </div>
   );

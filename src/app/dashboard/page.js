@@ -1,9 +1,12 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useToast } from "@/components/ToastProvider";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function Dashboard() {
   const router = useRouter();
+  const toast = useToast();
 
   const [user, setUser] = useState("");
   const [language, setLanguage] = useState("");
@@ -12,12 +15,17 @@ export default function Dashboard() {
   const [allResults, setAllResults] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [resultsLoading, setResultsLoading] = useState(true);
   const pageSize = 10;
 
   const fetchResults = (page) => {
     const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    if (!userId) {
+      setResultsLoading(false);
+      return;
+    }
 
+    setResultsLoading(true);
     fetch(
       `/api/results?userId=${encodeURIComponent(userId)}&page=${page}&limit=${pageSize}`,
     )
@@ -30,6 +38,10 @@ export default function Dashboard() {
       })
       .catch((err) => {
         console.error("Cannot load results:", err);
+        toast.error("Unable to load results");
+      })
+      .finally(() => {
+        setResultsLoading(false);
       });
   };
 
@@ -45,7 +57,7 @@ export default function Dashboard() {
 
   const handleStart = () => {
     if (!language || !difficulty || !questions) {
-      alert("Please select all fields");
+      toast.error("Please select all fields");
       return;
     }
 
@@ -56,9 +68,20 @@ export default function Dashboard() {
     router.push("/test");
   };
 
-  const handleLogout = () => {
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogoutRequest = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutModal(false);
     localStorage.clear();
     router.push("/");
+  };
+
+  const handleCancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   return (
@@ -70,12 +93,20 @@ export default function Dashboard() {
         </h2>
 
         <button
-          onClick={handleLogout}
+          type="button"
+          onClick={handleLogoutRequest}
           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition"
         >
           Logout
         </button>
       </div>
+      <ConfirmModal
+        open={showLogoutModal}
+        title="Confirm Logout"
+        message="Are you sure you want to logout?"
+        onConfirm={handleConfirmLogout}
+        onCancel={handleCancelLogout}
+      />
 
       {/* MAIN CONTENT */}
       <div className="flex justify-center items-center mt-16 px-4">
@@ -134,7 +165,13 @@ export default function Dashboard() {
       </div>
 
       {/* TEST HISTORY */}
-      {allResults.length > 0 && (
+      {resultsLoading ? (
+        <div className="flex justify-center items-center mt-10 px-4">
+          <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-4xl text-center text-gray-500 animate-pulse">
+            Loading your most recent results...
+          </div>
+        </div>
+      ) : allResults.length > 0 ? (
         <div className="flex justify-center items-center mt-10 px-4">
           <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-4xl">
             <h2 className="text-2xl font-bold text-center text-purple-600 mb-6">
@@ -217,7 +254,7 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
