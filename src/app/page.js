@@ -8,6 +8,7 @@ import { useToast } from "@/components/ToastProvider";
 export default function Home() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const toast = useToast();
 
@@ -15,10 +16,12 @@ export default function Home() {
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm();
 
   const onSubmit = async (data) => {
+    setLoading(true);
     const url = isLogin ? "/api/auth/login" : "/api/auth/register";
 
     try {
@@ -47,7 +50,15 @@ export default function Home() {
     } catch (error) {
       console.error(error);
       const msg = error?.response?.data?.message || "Something went wrong";
-      toast.error(msg);
+      const field = error?.response?.data?.field;
+
+      if (field && (field === "username" || field === "email")) {
+        setError(field, { type: "server", message: msg });
+      } else {
+        toast.error(msg);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -151,10 +162,41 @@ export default function Home() {
 
           {/* Submit Button */}
           <button
-            className="cursor-pointer w-full bg-linear-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition duration-200 mt-6"
+            disabled={loading}
+            className={`w-full font-bold py-3 px-4 rounded-lg transform transition duration-200 mt-6 flex items-center justify-center ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed opacity-75"
+                : "bg-linear-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:scale-105 cursor-pointer"
+            }`}
             type="submit"
           >
-            {isLogin ? "Login" : "Register"}
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Processing...
+              </>
+            ) : isLogin ? (
+              "Login"
+            ) : (
+              "Register"
+            )}
           </button>
         </form>
 
@@ -171,7 +213,12 @@ export default function Home() {
         {/* Toggle Button */}
         <button
           type="button"
-          className="cursor-pointer w-full border-2 border-blue-500 text-blue-600 font-bold py-3 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition duration-200"
+          disabled={loading}
+          className={`w-full border-2 font-bold py-3 px-4 rounded-lg transform transition duration-200 ${
+            loading
+              ? "border-gray-300 text-gray-400 cursor-not-allowed"
+              : "border-blue-500 text-blue-600 hover:shadow-lg hover:scale-105 cursor-pointer"
+          }`}
           onClick={() => {
             setIsLogin(!isLogin);
             reset();
