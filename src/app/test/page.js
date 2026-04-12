@@ -17,15 +17,28 @@ export default function Test() {
   const router = useRouter();
 
   useEffect(() => {
-    const lang = localStorage.getItem("language") || "javascript";
-    const diff = localStorage.getItem("difficulty") || "easy";
-    const numQuestions = parseInt(localStorage.getItem("questions")) || 10;
+    const user = localStorage.getItem("user");
+    const lang = localStorage.getItem("language");
+    const diff = localStorage.getItem("difficulty");
+    const numQuestions = parseInt(localStorage.getItem("questions"));
+    const testToken = localStorage.getItem("testToken");
+
+    // 🔒 Not logged in
+    if (!user) {
+      router.replace("/");
+      return;
+    }
+
+    // 🚫 No selection or no test token → block access
+    if (!lang || !diff || !numQuestions || !testToken) {
+      router.replace("/dashboard");
+      return;
+    }
 
     setLanguage(lang);
     setDifficulty(diff);
     setNumberOfQuestions(numQuestions);
 
-    // Get questions from static data
     const allQuestions = testData[lang]?.[diff] || [];
     const selectedQuestions = allQuestions.slice(0, numQuestions);
     setQuestions(selectedQuestions);
@@ -41,7 +54,6 @@ export default function Test() {
     setInitialTime(timeForQuiz);
     setTimer(timeForQuiz);
   }, []);
-
   const saveResult = async (finalScore, finalTotal, finalTime) => {
     const userId = localStorage.getItem("userId");
     const username = localStorage.getItem("user");
@@ -80,9 +92,14 @@ export default function Test() {
 
   useEffect(() => {
     if (timer === 0 && questions.length > 0) {
-      saveResult(score, questions.length, initialTime).then(() =>
-        router.push("/result"),
-      );
+      saveResult(score, questions.length, initialTime).then(() => {
+        const resultToken =
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15);
+        localStorage.setItem("resultToken", resultToken);
+        localStorage.removeItem("testToken"); // Prevent returning to test
+        router.push(`/result?token=${resultToken}`);
+      });
     }
     const t = setTimeout(() => setTimer((prev) => prev - 1), 1000);
     return () => clearTimeout(t);
@@ -109,7 +126,12 @@ export default function Test() {
       const finalTime = initialTime - timer;
 
       await saveResult(finalScore, finalTotal, finalTime);
-      router.push("/result");
+      const resultToken =
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15);
+      localStorage.setItem("resultToken", resultToken);
+      localStorage.removeItem("testToken"); // Prevent returning to test
+      router.push(`/result?token=${resultToken}`);
     }
   };
 

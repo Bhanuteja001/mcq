@@ -47,9 +47,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    setUser(storedUser || "User");
+    if (!storedUser) {
+      router.replace("/");
+      return;
+    }
+    setUser(storedUser);
+    localStorage.removeItem("testToken"); // Always start clean on dashboard
     fetchResults(currentPage);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     fetchResults(currentPage);
@@ -60,7 +65,15 @@ export default function Dashboard() {
       toast.error("Please select all fields");
       return;
     }
-
+    if (!user) {
+      router.replace("/");
+      return;
+    }
+    // Generate a test token
+    const testToken =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
+    localStorage.setItem("testToken", testToken);
     localStorage.setItem("language", language);
     localStorage.setItem("difficulty", difficulty);
     localStorage.setItem("questions", questions);
@@ -120,7 +133,7 @@ export default function Dashboard() {
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="w-full border p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full border p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="">-- Technology --</option>
               <option value="javascript">JavaScript</option>
@@ -132,7 +145,7 @@ export default function Dashboard() {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="w-full border p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              className="w-full border p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400"
             >
               <option value="">-- Difficulty --</option>
               <option value="easy">Easy</option>
@@ -144,7 +157,7 @@ export default function Dashboard() {
             <select
               value={questions}
               onChange={(e) => setQuestions(e.target.value)}
-              className="w-full border p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="w-full border p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-green-400"
             >
               <option value="">-- Questions --</option>
               <option value="5">5</option>

@@ -28,7 +28,7 @@ export default function ConfirmModal({
               onClick={onConfirm}
               className="rounded-2xl cursor-pointer bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition"
             >
-              Ok
+              Yes
             </button>
           </div>
         </div>

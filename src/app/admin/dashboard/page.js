@@ -118,7 +118,7 @@ export default function AdminDashboard() {
         {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
           <div>
-            <h1 className="text-4xl font-black bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent tracking-tight mb-2">
+            <h1 className="text-4xl font-black bg-linear-0 from-blue-400 to-indigo-500 bg-clip-text text-transparent tracking-tight mb-2">
               Management Portal
             </h1>
             <p className="text-slate-400 font-medium">

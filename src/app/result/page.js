@@ -14,6 +14,21 @@ export default function Result() {
   const router = useRouter();
 
   useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (!user) {
+      router.replace("/");
+      return;
+    }
+
+    // Check for result token
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+    const storedToken = localStorage.getItem("resultToken");
+    if (!token || token !== storedToken) {
+      router.replace("/dashboard");
+      return;
+    }
+
     setScore(parseInt(localStorage.getItem("score")) || 0);
     setTotal(parseInt(localStorage.getItem("total")) || 0);
     setTimeTaken(parseInt(localStorage.getItem("timeTaken")) || 0);
@@ -22,12 +37,23 @@ export default function Result() {
     setNumberOfQuestions(
       parseInt(localStorage.getItem("numberOfQuestions")) || 0,
     );
-  }, []);
+  }, [router]);
 
   const wrong = total - score;
   const percentage = total > 0 ? ((score / total) * 100).toFixed(2) : 0;
 
   const handleDashboard = () => {
+    // Clear all test-related data from storage
+    localStorage.removeItem("language");
+    localStorage.removeItem("difficulty");
+    localStorage.removeItem("questions");
+    localStorage.removeItem("testToken");
+    localStorage.removeItem("resultToken");
+    localStorage.removeItem("score");
+    localStorage.removeItem("total");
+    localStorage.removeItem("numberOfQuestions");
+    localStorage.removeItem("timeTaken");
+
     router.push("/dashboard");
   };
 
