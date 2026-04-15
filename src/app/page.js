@@ -3,13 +3,10 @@ import { redirect } from "next/navigation";
 import LoginPage from "@/components/LoginPage";
 import { verifyToken } from "@/lib/jwt";
 
-export default function Home() {
-  const cookieStore = cookies();
-  const tokenCookie =
-    typeof cookieStore.get === "function"
-      ? cookieStore.get("token")
-      : cookieStore?.token;
-  const token = tokenCookie?.value ?? tokenCookie;
+export default async function Home() {
+  const cookieStore = await cookies();
+  const tokenCookie = cookieStore.get("token");
+  const token = tokenCookie?.value;
 
   if (token) {
     try {

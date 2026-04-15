@@ -17,7 +17,11 @@ export async function POST(req) {
   if (!isMatch)
     return NextResponse.json({ message: "Invalid Password" }, { status: 401 });
 
-  const token = generateToken(user);
+  const sessionId = crypto.randomUUID();
+  user.sessionId = sessionId;
+  await user.save();
+
+  const token = generateToken({ ...user.toObject(), sessionId });
 
   const response = NextResponse.json({
     message: "Login Successful",
@@ -25,6 +29,7 @@ export async function POST(req) {
       username: user.username,
       email: user.email,
       id: user._id,
+      sessionId,
     },
   });
   response.cookies.set("token", token, {

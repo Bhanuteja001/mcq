@@ -12,6 +12,7 @@ export async function POST(req) {
     difficulty,
     numberOfQuestions,
     timeTaken,
+    status,
   } = await req.json();
 
   if (!userId || !username) {
@@ -31,6 +32,7 @@ export async function POST(req) {
     difficulty,
     numberOfQuestions,
     timeTaken,
+    status: status || "completed",
   });
 
   return NextResponse.json({ message: "Result Saved" });
@@ -51,8 +53,9 @@ export async function GET(req) {
   const skip = (page - 1) * limit;
 
   await connectDB();
-  const totalCount = await Result.countDocuments({ userId });
-  const results = await Result.find({ userId })
+  const filter = { userId, status: "completed" };
+  const totalCount = await Result.countDocuments(filter);
+  const results = await Result.find(filter)
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);

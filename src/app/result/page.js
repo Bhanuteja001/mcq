@@ -11,6 +11,8 @@ export default function Result() {
   const [difficulty, setDifficulty] = useState("");
   const [numberOfQuestions, setNumberOfQuestions] = useState(0);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isDisqualified, setIsDisqualified] = useState(false);
+  const [disqualificationReason, setDisqualificationReason] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -37,6 +39,12 @@ export default function Result() {
     setNumberOfQuestions(
       parseInt(localStorage.getItem("numberOfQuestions")) || 0,
     );
+
+    const disqualified = urlParams.get("disqualified") === "true" || localStorage.getItem("disqualified") === "true";
+    setIsDisqualified(disqualified);
+    if (disqualified) {
+      setDisqualificationReason(urlParams.get("reason") || "Multiple violations detected");
+    }
   }, [router]);
 
   const wrong = total - score;
@@ -53,6 +61,7 @@ export default function Result() {
     localStorage.removeItem("total");
     localStorage.removeItem("numberOfQuestions");
     localStorage.removeItem("timeTaken");
+    localStorage.removeItem("disqualified");
 
     router.push("/dashboard");
   };
@@ -77,8 +86,25 @@ export default function Result() {
         {/* Header */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <h1 className="text-3xl font-bold text-center text-purple-600 mb-4">
-            Test Results
+            {isDisqualified ? "Assessment Terminated" : "Test Results"}
           </h1>
+
+          {isDisqualified && (
+            <div className="bg-red-100 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700 font-bold">
+                    DISQUALIFIED: {disqualificationReason}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Technology and Difficulty */}
           <div className="grid grid-cols-3 gap-4 mb-6">
@@ -148,13 +174,15 @@ export default function Result() {
         {/* Overall Score Card */}
         <div className="bg-linear-to-r from-purple-500 to-blue-500 rounded-lg shadow-lg p-8 text-white text-center mb-6">
           <p className="text-lg font-semibold mb-2">Overall Score</p>
-          <p className="text-6xl font-bold mb-2">{percentage}%</p>
+          <p className="text-6xl font-bold mb-2">{isDisqualified ? "0.00" : percentage}%</p>
           <p className="text-lg">
-            {percentage >= 70
-              ? "🎉 Excellent Work!"
-              : percentage >= 50
-                ? "👍 Good Effort!"
-                : "📚 Keep Learning!"}
+            {isDisqualified
+              ? "❌ Disqualified for violating exam protocols."
+              : percentage >= 70
+                ? "🎉 Excellent Work!"
+                : percentage >= 50
+                  ? "👍 Good Effort!"
+                  : "📚 Keep Learning!"}
           </p>
         </div>
 

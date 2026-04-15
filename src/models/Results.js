@@ -10,6 +10,7 @@ const ResultSchema = new mongoose.Schema(
     score: { type: Number, required: true },
     total: { type: Number, required: true },
     timeTaken: { type: Number, required: true },
+    status: { type: String, enum: ["completed", "disqualified"], default: "completed" },
   },
   {
     timestamps: true,

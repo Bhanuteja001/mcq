@@ -23,6 +23,10 @@ const UserSchema = new mongoose.Schema({
     enum: ["user", "admin"],
     default: "user",
   },
+  sessionId: {
+    type: String,
+    default: null,
+  },
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

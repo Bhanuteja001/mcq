@@ -54,6 +54,23 @@ export default function Dashboard() {
     setUser(storedUser);
     localStorage.removeItem("testToken"); // Always start clean on dashboard
     fetchResults(currentPage);
+
+    // 🛡️ Single Session Check
+    const checkSession = async () => {
+      try {
+        const res = await fetch("/api/auth/validate-session");
+        if (!res.ok) {
+          localStorage.clear();
+          router.replace("/");
+        }
+      } catch (err) {
+        console.error("Session validation failed", err);
+      }
+    };
+
+    checkSession(); // Initial check
+    const interval = setInterval(checkSession, 30000); // Check every 30 seconds
+    return () => clearInterval(interval);
   }, [router]);
 
   useEffect(() => {
